@@ -1,6 +1,7 @@
 var lodash = {
         objects : {
             assign: require('lodash-node/modern/objects/assign'),
+            defaults: require('lodash-node/modern/objects/defaults'),
             has: require('lodash-node/modern/objects/has'),
             clone: require('lodash-node/modern/objects/clone'),
             isArray: require('lodash-node/modern/objects/isArray'),
@@ -139,7 +140,7 @@ lodash.objects.assign(Collection.prototype, {
             at += this.length + 1;
         }
         sortable = this.comparator && (at === null) && options.sort !== false;
-        sortAttr = lodashs.objects.isString(this.comparator) ? this.comparator : null;
+        sortAttr = lodash.objects.isString(this.comparator) ? this.comparator : null;
 
         // initial setup of arrays and objects
         toAdd = [];
