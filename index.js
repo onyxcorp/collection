@@ -1,7 +1,7 @@
 var lodash = {
         objects : {
             assign: require('lodash-node/modern/objects/assign'),
-            default: require('lodash-node/modern/objects/default'),
+            has: require('lodash-node/modern/objects/has'),
             clone: require('lodash-node/modern/objects/clone'),
             isArray: require('lodash-node/modern/objects/isArray'),
             isString: require('lodash-node/modern/objects/isString'),
@@ -418,11 +418,11 @@ var methods = ['forEach', 'map', 'reduce', 'reduceRight', 'find', 'filter',
 
 // Mix in each Lodash method as a proxy to `Collection#models`.
 lodash.collections.forEach(methods, function(method) {
-  if (!_[method]) return;
+  if (!lodash.collections[method]) return;
   Collection.prototype[method] = function() {
     var args = [].slice.call(arguments);
     args.unshift(this.models);
-    return _[method].apply(_, args);
+    return lodash.collections[method].apply(lodash.collections, args);
   };
 });
 
@@ -431,12 +431,12 @@ var attributeMethods = ['groupBy', 'countBy', 'sortBy', 'indexBy'];
 
 // Use attributes instead of properties.
 lodash.collections.forEach(attributeMethods, function(method) {
-  if (!_[method]) return;
+  if (!lodash.collections[method]) return;
   Collection.prototype[method] = function(value, context) {
     var iterator = lodash.objects.isFunction(value) ? value : function(model) {
       return model.get(value);
     };
-    return _[method](this.models, iterator, context);
+    return lodash.collections[method](this.models, iterator, context);
   };
 });
 
@@ -451,7 +451,7 @@ Collection.extend = function(protoProps, staticProps) {
     // The constructor function for the new subclass is either defined by you
     // (the "constructor" property in your `extend` definition), or defaulted
     // by us to simply call the parent's constructor.
-    if (protoProps && _.has(protoProps, 'constructor')) {
+    if (protoProps && lodash.objects.has(protoProps, 'constructor')) {
         child = protoProps.constructor;
     } else {
         child = function () {
@@ -460,7 +460,7 @@ Collection.extend = function(protoProps, staticProps) {
     }
 
     // Add static properties to the constructor function, if supplied.
-    _.assign(child, parent, staticProps);
+    lodash.objects.assign(child, parent, staticProps);
 
     // Set the prototype chain to inherit from `parent`, without calling
     // `parent`'s constructor function.
@@ -472,7 +472,7 @@ Collection.extend = function(protoProps, staticProps) {
 
     // Add prototype properties (instance properties) to the subclass,
     // if supplied.
-    if (protoProps) _.assign(child.prototype, protoProps);
+    if (protoProps) lodash.objects.assign(child.prototype, protoProps);
 
     // Set a convenience property in case the parent's prototype is needed
     // later.
