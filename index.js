@@ -155,11 +155,12 @@ lodash.objects.assign(Collection.prototype, {
         // Turn bare objects into model references, and prevent invalid models
         // from being added.
         for (i = 0, length = models.length; i < length; i++) {
-
             attrs = models[i];
+
             // If a duplicate is found, prevent it from being added and
             // optionally merge it into the existing model.
             existing = this.get(attrs);
+
             if (existing) {
                 if (remove) {
                     modelMap[existing.cid] = true;
@@ -232,6 +233,7 @@ lodash.objects.assign(Collection.prototype, {
             this.sort();
         }
 
+
         // Return the added (or merged) model (or models).
         return singular ? models[0] : models;
     },
@@ -276,7 +278,7 @@ lodash.objects.assign(Collection.prototype, {
 
     // Slice out a sub-array of models from the collection.
     slice: function() {
-        return slice.apply(this.models, arguments);
+        return [].slice.apply(this.models, arguments);
     },
 
     // Get a model from the set by id. Obj can either be the entire model attributes
@@ -326,7 +328,7 @@ lodash.objects.assign(Collection.prototype, {
         options = options || {};
 
         // Run sort based on type of `comparator`.
-        if (lodashs.objects.isString(this.comparator) || this.comparator.length === 1) {
+        if (lodash.objects.isString(this.comparator) || this.comparator.length === 1) {
             this.models = this.sortBy(this.comparator, this);
         } else {
             this.models.sort(lodash.functions.bind(this.comparator, this));
@@ -378,10 +380,12 @@ lodash.objects.assign(Collection.prototype, {
         options = options ? lodash.objects.clone(options) : {};
         options.collection = this;
         var model = new this.model(attrs, options);
-        if (!model.validationError.length) {
+        if (model.isValid()) {
             return model;
+        } else {
+            debug(model.validationError);
+            return false;
         }
-        return false;
     },
 
     // Method for checking whether an object should be considered a model for
