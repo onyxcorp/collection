@@ -10,6 +10,7 @@ var lodash = {
             isObject: require('lodash-node/modern/objects/isObject')
         },
         functions: require('lodash-node/modern/functions'),
+        arrays: require('lodash-node/modern/arrays'),
         collections: require('lodash-node/modern/collections')
     },
     Model = require('model'),
@@ -418,17 +419,18 @@ lodash.objects.assign(Collection.prototype, {
 // all the aliases were removed (each -> forEach, and things like that)
 var methods = ['forEach', 'map', 'reduce', 'reduceRight', 'find', 'filter',
     'reject', 'every', 'some', 'contains', 'invoke', 'max', 'min', 'toArray',
-    'size', 'first', 'initial', 'rest', 'last', 'without', 'difference',
-    'indexOf', 'shuffle', 'lastIndexOf', 'sample', 'partition'];
+    'size', 'first', 'last', 'shuffle', 'without', 'difference', 'initial', 'rest'];
 
 // Mix in each Lodash method as a proxy to `Collection#models`.
 lodash.collections.forEach(methods, function(method) {
-  if (!lodash.collections[method]) return;
-  Collection.prototype[method] = function() {
-    var args = [].slice.call(arguments);
-    args.unshift(this.models);
-    return lodash.collections[method].apply(lodash.collections, args);
-  };
+    var functionGroup;
+    if (!lodash.collections[method] && !lodash.arrays[method]) return;
+    Collection.prototype[method] = function() {
+        var args = [].slice.call(arguments);
+        args.unshift(this.models);
+        functionGroup = lodas.collections[method] ? 'collections' : 'arrays';
+        return lodash[functionGroup][method].apply(lodash[functionGroup], args);
+    };
 });
 
 // Lodash methods that take a property name as an argument.
