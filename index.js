@@ -428,7 +428,7 @@ lodash.collections.forEach(methods, function(method) {
     Collection.prototype[method] = function() {
         var args = [].slice.call(arguments);
         args.unshift(this.models);
-        functionGroup = lodas.collections[method] ? 'collections' : 'arrays';
+        functionGroup = lodash.collections[method] ? 'collections' : 'arrays';
         return lodash[functionGroup][method].apply(lodash[functionGroup], args);
     };
 });
