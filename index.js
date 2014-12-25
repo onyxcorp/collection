@@ -30,7 +30,7 @@ var lodash = {
 // Create a new **Collection**, perhaps to contain a specific type of `model`.
 // If a `comparator` is specified, the Collection will maintain
 // its models in sort order, as they're added and removed.
-Collection = function(models, options) {
+Collection = function (models, options) {
     options = options || {};
     if (options.model) {
         this.model = options.model;
@@ -58,21 +58,49 @@ lodash.objects.assign(Collection.prototype, {
 
     // The JSON representation of a Collection is an array of the
     // models' attributes.
-    toJSON: function(options) {
+    toJSON: function () {
         return this.map( function (model) {
-            return model.toJSON(options);
+            return model.toJSON();
         });
     },
 
+    // The JSON representation of a Collection as an object representation
+    // with the index being the model key
+    toObjectJSON: function () {
+        var modelsAttributes,
+            modelsData,
+            modelsKeys;
+
+        modelsAttributes = this.toJSON();
+        modelsKeys = lodash.collections.pluck(modelsAttributes, this.model.prototype.idAttribute || 'id');
+        modelsData = {};
+
+        // assign the keys to the values
+        lodash.collections.forEach(modelsKeys, function (name, index) {
+            if ( !Object.prototype.hasOwnProperty.call(modelsData, name) ) {
+                modelsData[name] = modelsAttributes[index];
+            } else {
+                if ( modelsData[name] instanceof Array ) {
+                    modelsData[name].push( modelsAttributes[index] );
+                } else {
+                    var val = modelsData[name];
+                    modelsData[name] = [val, modelsAttributes[index]];
+                }
+            }
+        });
+
+        return modelsData;
+    },
+
     // Add a model, or list of models to the set.
-    add: function(models, options) {
+    add: function (models, options) {
         var defaultOptions;
         defaultOptions = {add: true, remove: false};
         return this.set(models, lodash.objects.assign({merge: false}, options, defaultOptions));
     },
 
     // Remove a model, or a list of models from the set.
-    remove: function(models, options) {
+    remove: function (models, options) {
         var singular,
             model,
             index,
@@ -108,7 +136,7 @@ lodash.objects.assign(Collection.prototype, {
     // removing models that are no longer present, and merging models that
     // already exist in the collection, as necessary. Similar to **Model#set**,
     // the core operation for updating the data contained by the collection.
-    set: function(models, options) {
+    set: function (models, options) {
         var defaultOptions,
             singular,
             id,
@@ -242,7 +270,7 @@ lodash.objects.assign(Collection.prototype, {
     // When you have more items than you want to add or remove individually,
     // you can reset the entire set with a new list of models
     // Useful for bulk operations and optimizations.
-    reset: function(models, options) {
+    reset: function (models, options) {
         options = options ? lodash.objects.clone(options) : {};
         for (var i = 0, length = this.models.length; i < length; i++) {
           this._removeReference(this.models[i], options);
@@ -254,37 +282,37 @@ lodash.objects.assign(Collection.prototype, {
     },
 
     // Add a model to the end of the collection.
-    push: function(model, options) {
+    push: function (model, options) {
         return this.add(model, lodash.objects.assign({at: this.length}, options));
     },
 
     // Remove a model from the end of the collection.
-    pop: function(options) {
+    pop: function (options) {
         var model = this.at(this.length - 1);
         this.remove(model, options);
         return model;
     },
 
     // Add a model to the beginning of the collection.
-    unshift: function(model, options) {
+    unshift: function (model, options) {
         return this.add(model, lodash.objects.assign({at: 0}, options));
     },
 
     // Remove a model from the beginning of the collection.
-    shift: function(options) {
+    shift: function (options) {
         var model = this.at(0);
         this.remove(model, options);
         return model;
     },
 
     // Slice out a sub-array of models from the collection.
-    slice: function() {
+    slice: function () {
         return [].slice.apply(this.models, arguments);
     },
 
     // Get a model from the set by id. Obj can either be the entire model attributes
     // or just the id of the model
-    get: function(obj) {
+    get: function (obj) {
         var id;
 
         if (obj === null) {
@@ -298,7 +326,7 @@ lodash.objects.assign(Collection.prototype, {
     },
 
     // Get the model at the given index on the collection
-    at: function(index) {
+    at: function (index) {
         if (index < 0) {
             index += this.length;
         }
@@ -307,21 +335,21 @@ lodash.objects.assign(Collection.prototype, {
 
     // Return models with matching attributes. Useful for simple cases of
     // `filter`.
-    where: function(attrs, first) {
+    where: function (attrs, first) {
         // detect which lodash method to use, find or filter based on first parameter
         return this[first ? 'find' : 'filter'](this.models, attrs);
     },
 
     // Return the first model with matching attributes. Useful for simple cases
     // of `find`.
-    findWhere: function(attrs) {
+    findWhere: function (attrs) {
         return this.where(attrs, true);
     },
 
     // Force the collection to re-sort itself. You don't need to call this under
     // normal circumstances, as the set will maintain sort order as each item
     // is added.
-    sort: function(options) {
+    sort: function (options) {
         if (!this.comparator) {
             throw new Error('Cannot sort a set without a comparator');
         }
@@ -339,12 +367,12 @@ lodash.objects.assign(Collection.prototype, {
     },
 
     // Pluck an attribute from each model in the collection.
-    pluck: function(attr) {
+    pluck: function (attr) {
         return lodash.collections.invoke(this.models, 'get', attr);
     },
 
     // Create a new collection with an identical list of models as this one.
-    clone: function() {
+    clone: function () {
         return new this.constructor(this.models, {
             model: this.model,
             comparator: this.comparator
@@ -358,7 +386,7 @@ lodash.objects.assign(Collection.prototype, {
 
     // Private method to reset all internal state. Called when the collection
     // is first initialized or reset.
-    _reset: function() {
+    _reset: function () {
         this.length = 0;
         this.models = [];
         this._byId  = {};
@@ -367,7 +395,7 @@ lodash.objects.assign(Collection.prototype, {
     // Prepare a hash of attributes (or other model) to be added to this
     // collection.
     // TODO auto-mode for creating a model
-    _prepareModel: function(attrs, options) {
+    _prepareModel: function (attrs, options) {
         // if it is a model, save a reference of the collection and add it
         if (this._isModel(attrs)) {
           if (!attrs.collection) {
@@ -396,7 +424,7 @@ lodash.objects.assign(Collection.prototype, {
     },
 
     // Internal method to create a model's ties to a collection.
-    _addReference: function(model, options) {
+    _addReference: function (model, options) {
         var id;
         this._byId[model.cid] = model;
         id = this.modelId(model.attributes);
@@ -406,7 +434,7 @@ lodash.objects.assign(Collection.prototype, {
     },
 
     // Internal method to sever a model's ties to a collection.
-    _removeReference: function(model, options) {
+    _removeReference: function (model, options) {
         if (this === model.collection) {
             delete model.collection;
         }
@@ -422,10 +450,10 @@ var methods = ['forEach', 'map', 'reduce', 'reduceRight', 'find', 'filter',
     'size', 'first', 'last', 'shuffle', 'without', 'difference', 'initial', 'rest'];
 
 // Mix in each Lodash method as a proxy to `Collection#models`.
-lodash.collections.forEach(methods, function(method) {
+lodash.collections.forEach(methods, function (method) {
     var functionGroup;
     if (!lodash.collections[method] && !lodash.arrays[method]) return;
-    Collection.prototype[method] = function() {
+    Collection.prototype[method] = function () {
         var args = [].slice.call(arguments);
         args.unshift(this.models);
         functionGroup = lodash.collections[method] ? 'collections' : 'arrays';
@@ -437,10 +465,10 @@ lodash.collections.forEach(methods, function(method) {
 var attributeMethods = ['groupBy', 'countBy', 'sortBy', 'indexBy'];
 
 // Use attributes instead of properties.
-lodash.collections.forEach(attributeMethods, function(method) {
+lodash.collections.forEach(attributeMethods, function (method) {
   if (!lodash.collections[method]) return;
-  Collection.prototype[method] = function(value, context) {
-    var iterator = lodash.objects.isFunction(value) ? value : function(model) {
+  Collection.prototype[method] = function (value, context) {
+    var iterator = lodash.objects.isFunction(value) ? value : function (model) {
       return model.get(value);
     };
     return lodash.collections[method](this.models, iterator, context);
@@ -448,7 +476,7 @@ lodash.collections.forEach(attributeMethods, function(method) {
 });
 
 // same extend function used by backbone
-Collection.extend = function(protoProps, staticProps) {
+Collection.extend = function (protoProps, staticProps) {
     var parent,
         child,
         Surrogate;
