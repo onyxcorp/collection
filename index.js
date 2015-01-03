@@ -7,7 +7,8 @@ var lodash = {
             isArray: require('lodash-node/modern/objects/isArray'),
             isString: require('lodash-node/modern/objects/isString'),
             isFunction: require('lodash-node/modern/objects/isFunction'),
-            isObject: require('lodash-node/modern/objects/isObject')
+            isObject: require('lodash-node/modern/objects/isObject'),
+            pairs: require('lodash-node/modern/objects/pairs')
         },
         functions: require('lodash-node/modern/functions'),
         arrays: require('lodash-node/modern/arrays'),
@@ -410,8 +411,28 @@ lodash.objects.assign(Collection.prototype, {
     // Return models with matching attributes. Useful for simple cases of
     // `filter`.
     where: function (attrs, first) {
+        var matches,
+            checkMatch;
+
+        // implementation from underscore
+        // https://github.com/jashkenas/underscore/blob/master/underscore.js
+        matches = function(attrs) {
+            var pairs = lodash.objects.pairs(attrs), length = pairs.length;
+            return function(obj) {
+              if (obj == null) return !length;
+              obj = new Object(obj);
+              for (var i = 0; i < length; i++) {
+                var pair = pairs[i], key = pair[0];
+                if (pair[1] !== obj[key] || !(key in obj)) return false;
+              }
+              return true;
+            };
+        };
+        checkMatch = matches(attrs);
         // detect which lodash method to use, find or filter based on first parameter
-        return lodash.collections[first ? 'find' : 'filter'](this.models, attrs);
+        return lodash.collections[first ? 'find' : 'filter'](this.models, function(model) {
+            return checkMatch(model.attributes);
+        });
     },
 
     // Force the collection to re-sort itself. You don't need to call this under

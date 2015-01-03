@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/onyxcorp/collection",
   "dependencies": {
-    "lodash-node": "^2.4.1",
+    "lodash-node": "git+https://github.com/lodash/lodash-node.git#2.4.1",
     "model": "git+https://github.com/onyxcorp/model"
   }
 }
