@@ -67,23 +67,28 @@ lodash.objects.assign(Collection.prototype, {
 
     // The JSON representation of a Collection as an object with the index key
     // being the model key
-    toObjectJSON: function () {
+    toObjectJSON: function (index) {
         var modelsAttributes,
             modelsData,
             modelsKeys;
 
         modelsAttributes = this.toJSON();
-        modelsKeys = lodash.collections.pluck(modelsAttributes, this.model.prototype.idAttribute || 'id');
+        modelsKeys = lodash.collections.pluck(modelsAttributes, index || this.model.prototype.idAttribute || 'id');
         modelsData = {};
 
         // assign the keys to the values
         lodash.collections.forEach(modelsKeys, function (name, index) {
+            // if it is a new model being assigned, just set the key and data
             if ( !Object.prototype.hasOwnProperty.call(modelsData, name) ) {
                 modelsData[name] = modelsAttributes[index];
             } else {
+                // the model already exists in modelsData
+
+                // if the modelsData is an array, push the attributes
                 if ( modelsData[name] instanceof Array ) {
                     modelsData[name].push( modelsAttributes[index] );
                 } else {
+                    // modelsData should be an object here, assign the key and value
                     var val = modelsData[name];
                     modelsData[name] = [val, modelsAttributes[index]];
                 }
