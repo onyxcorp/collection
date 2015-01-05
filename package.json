@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/onyxcorp/collection",
   "dependencies": {
+    "backbone-extend-standalone": "git+https://github.com/gre/backbone-extend-standalone",
     "lodash-node": "git+https://github.com/lodash/lodash-node.git#2.4.1",
     "model": "git+https://github.com/onyxcorp/model"
   }
