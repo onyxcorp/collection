@@ -16,7 +16,6 @@ var lodash = {
     },
     Model = require('model'),
     extend = require('backbone-extend-standalone'),
-    debug = function (message) { console.log(message); },
     Collection;
 
 // Onyx.Collection (based on Backbone.Collection)
