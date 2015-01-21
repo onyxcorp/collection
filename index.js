@@ -49,6 +49,10 @@ Collection = function (models, options) {
 // Define the Collection's inheritable methods.
 lodash.objects.assign(Collection.prototype, {
 
+    // default value for how data should be sorted in the collection
+    // to override this you should use the method setSortingOrder
+    _sortOrder: 'ASC',
+
     // The default model for a collection is just a **Onyx.Model**.
     // This should be overridden in most cases.
     model: Model,
@@ -322,6 +326,7 @@ lodash.objects.assign(Collection.prototype, {
     // Private method to reset all internal state. Called when the collection
     // is first initialized or reset.
     _reset: function () {
+        this.sortOrder = 'ASC';
         this.length = 0;
         this.models = [];
         this._byId = {};
@@ -440,21 +445,34 @@ lodash.objects.assign(Collection.prototype, {
         });
     },
 
+    // Method that should be used to override the default sorting order of the collection
+    setSortingOrder: function (order) {
+        if (order === 'ASC' || order === 'DESC') {
+            this._sortOrder = order;
+        } else {
+            throw new Error('Sorting order only accepts values ASC or DESC');
+        }
+    },
+
     // Force the collection to re-sort itself. You don't need to call this under
     // normal circumstances, as the set will maintain sort order as each item
     // is added.
-    sort: function (options) {
+    sort: function () {
         if (!this.comparator) {
             throw new Error('Cannot sort a set without a comparator');
         }
 
-        options = options || {};
-
-        // Run sort based on type of `comparator`.
+        // Run sort based on type of `comparator`. If a string, use lodash sortBy
         if (lodash.objects.isString(this.comparator) || this.comparator.length === 1) {
             this.models = this.sortBy(this.comparator, this);
         } else {
+            // if a function is passed, delegate the sort to the default sort() of javascript arrays
+            // ref # http://www.w3schools.com/jsref/jsref_sort.asp
             this.models.sort(lodash.functions.bind(this.comparator, this));
+        }
+
+        if (this._sortOrder === 'DESC') {
+            this.models.reverse();
         }
 
         return this;
