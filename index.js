@@ -49,6 +49,9 @@ Collection = function (models, options) {
 // Define the Collection's inheritable methods.
 lodash.objects.assign(Collection.prototype, {
 
+    // default _sortOrder
+    _sortOrder: 'ASC',
+
     // The default model for a collection is just a **Onyx.Model**.
     // This should be overridden in most cases.
     model: Model,
@@ -324,7 +327,6 @@ lodash.objects.assign(Collection.prototype, {
     _reset: function () {
         this.length = 0;
         this.models = [];
-        this._sortOrder = 'ASC';
         this._byId = {};
     },
 
